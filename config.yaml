@@ -1,0 +1,59 @@
+# VkusVill Shopping Cart Agent
+
+llm:
+  api_key: "${OPENROUTER_API_KEY}"  # Set via environment variable
+  base_url: "https://openrouter.ai/api/v1"
+  model: "openai/gpt-4o-mini"
+  max_tokens: 4000
+  temperature: 0.3
+
+execution:
+  max_clarifications: 0
+  max_iterations: 10
+  mcp_context_limit: 15000
+  streaming_generator: "open_webui"
+  logs_dir: "logs"
+
+tools:
+  final_answer_tool:
+
+agents:
+  vkusvill_cart:
+    base_class: "RobustToolCallingAgent"
+
+    llm:
+      model: "openai/gpt-4o-mini"
+      temperature: 0.3
+      max_tokens: 4000
+      extra_body:
+        provider:
+          allow_fallbacks: false
+
+    execution:
+      max_iterations: 10
+
+    prompts:
+      system_prompt_str: |
+        Ты — помощник по сборке продуктовой корзины ВкусВилл.
+
+        Доступные инструменты:
+        {{available_tools}}
+
+        Алгоритм:
+        1. Определи список нужных продуктов из запроса пользователя.
+        2. Вызови vkusvill_batch_search с массивом всех запросов сразу.
+        3. Из результатов возьми xml_id найденных товаров.
+        4. Вызови vkusvill_cart_link_create с массивом товаров.
+        5. Через final_answer_tool верни пользователю:
+           - Нумерованный список товаров с ценами
+           - Итоговую сумму
+           - Ссылку на корзину
+
+        Правила:
+        - Используй vkusvill_batch_search для поиска ВСЕХ товаров за один вызов.
+        - НЕ задавай уточняющих вопросов. Сам определи что нужно.
+        - Максимум 20 товаров в корзине.
+        - Отвечай на русском.
+
+    tools:
+      - "final_answer_tool"
