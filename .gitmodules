@@ -1,0 +1,3 @@
+[submodule "sgr-agent-core"]
+	path = sgr-agent-core
+	url = https://github.com/vamplabAI/sgr-agent-core.git
